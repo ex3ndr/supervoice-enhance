@@ -2,6 +2,7 @@ import torch
 
 class EnchanceModel(torch.nn.Module):
     def __init__(self, flow, config):
+        super(EnchanceModel, self).__init__()
         self.flow = flow
         self.config = config
 

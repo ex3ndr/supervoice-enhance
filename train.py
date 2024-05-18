@@ -26,21 +26,17 @@ import wandb
 # Local
 from supervoice_enhance.config import config
 from supervoice_enhance.model import EnchanceModel
-from supervoice_flow.tensors import count_parameters, probability_binary_mask, drop_using_mask, random_interval_masking
-from training.dataset import load_distorted_loader, load_clean_loader
+from training.dataset import load_distorted_loader
 
 # Train parameters
 train_experiment = "ft-01"
 train_project="supervoice-enhance"
-train_datasets = "./external_datasets/libritts-r/"
-train_eval_datasets = [
-    "./external_datasets/libritts-r/test-clean/"
-]
+train_datasets = ["./external_datasets/libritts-r/dev-clean"]
+train_eval_datasets = ["./external_datasets/libritts-r/test-clean/"]
 train_duration = 15
 train_source_experiment = None
 train_auto_resume = True
 train_batch_size = 5 # Per GPU
-train_clean = True
 train_grad_accum_every = 2
 train_steps = 60000
 train_loader_workers = 5
@@ -194,7 +190,7 @@ def main():
                     flow = spec - (1 - train_sigma) * source_noise
 
                     # Train step
-                    predicted, loss = model(audio = spec_aug, noise = noise, times = times, target = flow)
+                    predicted, loss = model(source = spec_aug, noise = noise, times = times, target = flow)
 
                     # Backprop
                     optim.zero_grad()

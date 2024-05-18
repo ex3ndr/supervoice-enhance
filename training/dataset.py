@@ -1,7 +1,7 @@
 import torch
 import torchaudio
-from model.config import config
-from model.audio import load_mono_audio, spectogram
+from supervoice_enhance.config import config
+from supervoice_enhance.audio import load_mono_audio, spectogram
 from .audio import do_reverbrate
 from pathlib import Path
 import random
