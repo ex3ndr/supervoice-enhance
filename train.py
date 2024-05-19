@@ -25,11 +25,12 @@ import wandb
 
 # Local
 from supervoice_enhance.config import config
-from supervoice_enhance.model import EnchanceModel
+from supervoice_enhance.model import EnhanceModel
+from training.tensors import probability_binary_mask, drop_using_mask
 from training.dataset import load_distorted_loader
 
 # Train parameters
-train_experiment = "ft-01"
+train_experiment = "ft-02"
 train_project="supervoice-enhance"
 train_datasets = ["./external_datasets/libritts-r/dev-clean"]
 train_eval_datasets = ["./external_datasets/libritts-r/test-clean/"]
@@ -37,7 +38,8 @@ train_duration = 10
 train_source_experiment = None
 train_auto_resume = True
 train_batch_size = 5 # Per GPU
-train_grad_accum_every = 2
+train_drop_prob = 0.3
+train_grad_accum_every = 5
 train_steps = 60000
 train_loader_workers = 5
 train_log_every = 1
@@ -79,7 +81,7 @@ def main():
 
     # Model
     flow = torch.hub.load(repo_or_dir='ex3ndr/supervoice-flow', model='flow')
-    raw_model = EnchanceModel(flow, config)
+    raw_model = EnhanceModel(flow, config)
     model = raw_model
     wd_params, no_wd_params = [], []
     for param in model.parameters():
@@ -189,8 +191,12 @@ def main():
                     noise = (1 - (1 - train_sigma) * t) * source_noise + t * spec
                     flow = spec - (1 - train_sigma) * source_noise
 
+                    # Drop mask
+                    drop_mask = probability_binary_mask(shape = (batch_size,), true_prob = train_drop_prob, device = device)
+                    spec_aug_dropped = drop_using_mask(source = spec_aug, replacement = 0, mask = mask)
+
                     # Train step
-                    predicted, loss = model(source = spec_aug, noise = noise, times = times, target = flow)
+                    predicted, loss = model(source = spec_aug_dropped, noise = noise, times = times, target = flow)
 
                     # Backprop
                     optim.zero_grad()
