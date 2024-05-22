@@ -3,3 +3,4 @@ datasets:
   - lj-speech-1.1
   - musan
   - libritts-r
+  - hifi-tts

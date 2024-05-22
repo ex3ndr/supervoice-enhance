@@ -2,6 +2,7 @@ import torch
 import torchaudio
 from supervoice_enhance.config import config
 from supervoice_enhance.audio import load_mono_audio, spectogram
+from .distorter import create_distorter
 from .audio import do_reverbrate
 from pathlib import Path
 import random
@@ -127,57 +128,16 @@ def load_effected_sampler(datasets, effect, duration, return_source = False):
 
 def load_distorted_sampler(datasets, duration, return_source = False):
 
-    # Codecs for distortion
-    codec_probability = 0.3
-    codecs = [
-        {'format': "wav", 'encoder': "pcm_mulaw"},
-        {'format': "g722"},
-        {"format": "mp3", "codec_config": torchaudio.io.CodecConfig(bit_rate=8_000)},
-        {"format": "mp3", "codec_config": torchaudio.io.CodecConfig(bit_rate=64_000)}
-    ]
-
-    # RIRs
-    rir_probability = 0.8
     rir_files = []
     with open('./external_datasets/rir-1/files.txt', 'r') as file:
         for line in file:
             rir_files.append("./external_datasets/rir-1/" + line.strip())
 
-    # Apply RIR effect
-    def effect(audio):
-
-        # Pick RIR
-        rir = None
-        if random.random() < rir_probability:
-            rir = random.choice(rir_files)
-            rir = load_mono_audio(rir, config.audio.sample_rate)
-
-        # Pick codec
-        codec = None
-        if random.random() < codec_probability:
-            codec = random.choice(codecs)
-
-        # Pick effect
-        effect = None
-
-        # Apply RIR
-        if rir is not None:
-            audio = do_reverbrate(audio, rir)
-
-        # Apply processor
-        if codec is not None or effect is not None:
-            args = {}
-            if effect is not None:
-                args['effect'] = effect
-            if codec is not None:
-                args.update(codec)
-            effector = torchaudio.io.AudioEffector(**args)
-            audio = effector.apply(audio.unsqueeze(0).T, config.audio.sample_rate).T[0]
-
-        return audio
+    # Distorter
+    distorter = create_distorter(rir_files)
 
     # Load sampler
-    sampler = load_effected_sampler(datasets, effect, duration, return_source)
+    sampler = load_effected_sampler(datasets, distorter, duration, return_source)
 
     return sampler
 

@@ -30,16 +30,16 @@ from training.tensors import probability_binary_mask, drop_using_mask
 from training.dataset import load_distorted_loader
 
 # Train parameters
-train_experiment = "ft-02"
+train_experiment = "ft-05"
 train_project="supervoice-enhance"
-train_datasets = ["./external_datasets/libritts-r/dev-clean"]
+train_datasets = ["./external_datasets/hifi-tts/audio"]
 train_eval_datasets = ["./external_datasets/libritts-r/test-clean/"]
 train_duration = 10
 train_source_experiment = None
 train_auto_resume = True
 train_batch_size = 5 # Per GPU
 train_drop_prob = 0.3
-train_grad_accum_every = 5
+train_grad_accum_every = 1
 train_steps = 60000
 train_loader_workers = 5
 train_log_every = 1
@@ -192,11 +192,12 @@ def main():
                     flow = spec - (1 - train_sigma) * source_noise
 
                     # Drop mask
-                    drop_mask = probability_binary_mask(shape = (batch_size,), true_prob = train_drop_prob, device = device)
-                    spec_aug_dropped = drop_using_mask(source = spec_aug, replacement = 0, mask = mask)
+                    if train_drop_prob > 0:
+                        drop_mask = probability_binary_mask(shape = (batch_size,), true_prob = train_drop_prob, device = device)
+                        spec_aug = drop_using_mask(source = spec_aug, replacement = 0, mask = drop_mask)
 
                     # Train step
-                    predicted, loss = model(source = spec_aug_dropped, noise = noise, times = times, target = flow)
+                    predicted, loss = model(source = spec_aug, noise = noise, times = times, target = flow)
 
                     # Backprop
                     optim.zero_grad()
