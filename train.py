@@ -30,7 +30,7 @@ from training.tensors import probability_binary_mask, drop_using_mask
 from training.dataset import load_distorted_loader
 
 # Train parameters
-train_experiment = "ft-05"
+train_experiment = "ft-06"
 train_project="supervoice-enhance"
 train_datasets = ["./external_datasets/hifi-tts/audio"]
 train_eval_datasets = ["./external_datasets/libritts-r/test-clean/"]

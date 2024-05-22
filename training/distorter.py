@@ -1,4 +1,5 @@
-from .effect import default_noisy_pipeline
+from .effects import default_noisy_pipeline
+from supervoice_enhance.config import config
 import torchaudio
 import random
 

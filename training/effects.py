@@ -106,6 +106,7 @@ class Effect():
         return [effect]
 
     def apply(self, audio, sample_rate):
+        source_len = audio.shape[0]
 
         # Resolve effects
         effects = self.resolve()
@@ -114,7 +115,7 @@ class Effect():
         if effects is not None:
             sox_effects = []
             for effect in effects:
-                print("effect: " + str(effect))
+                # print("effect: " + str(effect))
                 if isinstance(effect, SoxEffect):
                     sox_effects.append(effect.effect) # Store sox effect
                 else:
@@ -130,6 +131,13 @@ class Effect():
             # Apply remaining sox effects
             if len(sox_effects) > 0:
                 audio = torchaudio.sox_effects.apply_effects_tensor(audio.unsqueeze(0), sample_rate, sox_effects, channels_first = True)[0][0]
+
+        # Pad or trim audio
+        if audio.shape[0] < source_len:
+            padding = source_len - audio.shape[0]
+            audio = torch.nn.functional.pad(audio, (0, padding), value=0)
+        else:
+            audio = audio[0:source_len]
         
         return audio
 
