@@ -16,6 +16,9 @@ def one_of(*args):
 def rir(rirs):
     return RirEffect(rirs)
 
+def background(files, min_snr = -5, max_snr = 20):
+    return BackgroundEffect(files, min_snr, max_snr)
+
 def effect(effect):
     return SimpleEffect(effect)
 
@@ -64,29 +67,32 @@ def noise(*, min_level = 0, max_level = 0.2):
 def lost_packets(*, min_lost_segments = 0, max_lost_segments = 50, min_segment = 100, max_segment = 1000):
     return LostPacketsEffect(max_lost_segments, min_lost_segments, min_segment, max_segment)
 
-def default_noisy_pipeline(rirs = []):
+def default_noisy_pipeline(*, rirs = [], bg = []):
     return series([
 
-        # Background gausian noise
+        # Room impulse response - add to clean audio to simulate room effects
+        maybe(rir(rirs), 0.8),
+
+        # Room impulse response - add to clean audio to simulate room effects
+        maybe(background(bg), 0.8),
+
+        # Background gausian noise - add to simulate microphone noise
         maybe(noise(), 0.5),
 
         # Main effects
         permutate([
-
-            # Room impulse response
-            maybe(rir(rirs), 0.8),
             
             # Audio capture quality
             maybe(one_of(low_pass(), band_pass()), 0.3),
 
             # Audio effects
             reverbate(),
-            overdrive(),
+            # overdrive(),
             equalizer(),
         ]),
 
         # Corrupt base audio
-        maybe(lost_packets(), 0.5),
+        # maybe(lost_packets(), 0.5),
     ])
 
 #
@@ -169,6 +175,21 @@ class RirEffect(Effect):
         def apply_rir(audio, sr):
             return do_reverbrate(audio, load_mono_audio(rir, sr))
         return self._resolve(apply_rir)
+
+class BackgroundEffect(Effect):
+    def __init__(self, files, min_snr, max_snr):
+        self.files = files
+        self.min_snr = min_snr
+        self.max_snr = max_snr
+
+    def resolve(self):
+        if len(self.files) == 0:
+            return self._resolve(None)
+        f = random.choice(self.files)
+        snr = random.uniform(self.min_snr, self.max_snr)
+        def apply_bg(audio, sr):
+            return do_background(audio, load_mono_audio(f, sr), snr)
+        return self._resolve(apply_bg)
 
 class NoiseEffect(Effect):
     def __init__(self, max_level, min_level):
@@ -272,6 +293,11 @@ def do_reverbrate(waveforms, rir):
     waveforms = waveforms.squeeze(dim=0).squeeze(dim=0)
     waveforms = waveforms[0:source_len]
 
+    # Sometimes it overflows
+    max_v = waveforms.max().abs()
+    if max_v > 0.99:
+        waveforms = (waveforms / max_v) * 0.98
+
     return waveforms
 
 def do_noise(waveforms, noise_level=0.1):
@@ -288,6 +314,34 @@ def do_noise(waveforms, noise_level=0.1):
 
     # Apply noise
     return waveforms * (1 - noise_level) + noise * noise_level
+
+def do_background(signal, bg, snr):
+
+    # Calculate offsets
+    signal_offset = 0
+    bg_offset = 0
+    l = bg.shape[0]
+    if bg.shape[0] < signal.shape[0]:
+        signal_offset = random.randint(0, signal.shape[0] - bg.shape[0])
+        bg_offset = 0
+        l = bg.shape[0]
+    elif bg.shape[0] > signal.shape[0]:
+        signal_offset = 0
+        bg_offset = random.randint(0, bg.shape[0] - signal.shape[0])
+        l = signal.shape[0]
+
+    # Calculate noise tensor
+    noise = torch.zeros_like(signal)
+    noise[signal_offset:signal_offset + l] = bg[bg_offset:bg_offset + l]
+
+    # Apply noise
+    updated = torchaudio.functional.add_noise(signal.unsqueeze(0), noise.unsqueeze(0), torch.tensor([snr]))[0]
+
+    # Sometimes it returns NaN - ignore noise then (when noise is zero)
+    if torch.isnan(updated).any():
+        return signal
+    else:
+        return updated
 
 def do_lost_packets(waveforms, lost_segments, min_segment, max_segment):
     for _ in range(lost_segments):

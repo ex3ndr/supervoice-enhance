@@ -3,7 +3,7 @@ from supervoice_enhance.config import config
 import torchaudio
 import random
 
-def create_distorter(rirs):
+def create_distorter(rirs, bg):
 
     # Parameters
     codec_probability = 0.3
@@ -15,7 +15,7 @@ def create_distorter(rirs):
     ]
 
     # Pipeline
-    pipeline = default_noisy_pipeline(rirs)
+    pipeline = default_noisy_pipeline(rirs = rirs, bg = bg)
 
     # Implementation
     def effector(audio):

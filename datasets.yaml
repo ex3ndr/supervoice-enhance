@@ -4,3 +4,6 @@ datasets:
   - musan
   - libritts-r
   - hifi-tts
+  - common-voice@16.0-en
+  - dns
+  - dns@noise

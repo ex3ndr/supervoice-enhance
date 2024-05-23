@@ -30,7 +30,7 @@ from training.tensors import probability_binary_mask, drop_using_mask
 from training.dataset import load_distorted_loader
 
 # Train parameters
-train_experiment = "ft-06"
+train_experiment = "ft-08"
 train_project="supervoice-enhance"
 train_datasets = ["./external_datasets/hifi-tts/audio"]
 train_eval_datasets = ["./external_datasets/libritts-r/test-clean/"]
@@ -39,7 +39,7 @@ train_source_experiment = None
 train_auto_resume = True
 train_batch_size = 5 # Per GPU
 train_drop_prob = 0.3
-train_grad_accum_every = 1
+train_grad_accum_every = 3
 train_steps = 60000
 train_loader_workers = 5
 train_log_every = 1
@@ -73,7 +73,6 @@ def main():
     # Prepare dataset
     accelerator.print("Loading dataset...")
     train_loader = load_distorted_loader(datasets = train_datasets, duration = train_duration, num_workers = train_loader_workers, batch_size = train_batch_size)
-    test_loader = load_distorted_loader(datasets = train_eval_datasets, duration = train_duration, num_workers = train_loader_workers, batch_size = train_batch_size)
 
     # Prepare model
     accelerator.print("Loading model...")
@@ -91,10 +90,8 @@ def main():
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optim, T_max = train_steps)
 
     # Accelerate
-    model, optim, train_loader, test_loader = accelerator.prepare(model, optim, train_loader, test_loader)
+    model, optim, train_loader = accelerator.prepare(model, optim, train_loader)
     train_cycle = cycle(train_loader)
-    test_cycle = cycle(test_loader)
-    test_batch = next(test_cycle)
     hps = {
         "train_lr_start": train_lr_start, 
         "train_lr_max": train_lr_max, 

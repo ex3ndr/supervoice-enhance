@@ -127,13 +127,19 @@ def load_effected_sampler(datasets, effect, duration, return_source = False):
 
 def load_distorted_sampler(datasets, duration, return_source = False):
 
+    # Load RIR files
     rir_files = []
     with open('./external_datasets/rir-1/files.txt', 'r') as file:
         for line in file:
             rir_files.append("./external_datasets/rir-1/" + line.strip())
 
+    # Load BG files
+    bg_files = []
+    for p in Path("./external_datasets/dns-noise").rglob("*.wav"):
+        bg_files.append(str(p))
+    
     # Distorter
-    distorter = create_distorter(rir_files)
+    distorter = create_distorter(rir_files, bg_files)
 
     # Load sampler
     sampler = load_effected_sampler(datasets, distorter, duration, return_source)
