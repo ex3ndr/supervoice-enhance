@@ -27,7 +27,7 @@ class SuperVoiceEnhance(torch.nn.Module):
         return reconstructed
 
     def _do_spectogram(self, waveform):
-        return spectogram(waveform, config.audio.n_fft, config.audio.n_mels, config.audio.hop_size, config.audio.win_size, config.audio.mel_norm, config.audio.mel_scale, config.audio.sample_rate).transpose(1, 0)
+        return spectogram(waveform, config.audio.n_fft, config.audio.n_mels, config.audio.hop_size, config.audio.win_size, config.audio.mel_norm, config.audio.mel_scale, config.audio.sample_rate)
     
     def _audio_normalize(self, src):
         return (src - config.audio.norm_mean) / config.audio.norm_std
