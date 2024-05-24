@@ -1,4 +1,4 @@
-# ✨ Supervoice Enhance [BETA]
+# ✨ SuperVoice Enhance [BETA]
 
 Enhancing diffusion neural network for a single speaker speech based on Speech Flow architecture. [Evaluation notebook](/eval.ipynb).
 
@@ -10,6 +10,14 @@ Enhancing diffusion neural network for a single speaker speech based on Speech F
 * ⚡️ Restoring and improving audio
 * 🎤 24khz mono audio
 * 🤹‍♂️ Can work with unknown languages
+
+# Sample
+
+https://github.com/ex3ndr/supervoice-enhance/assets/400659/b99ea87b-86fc-4436-9c74-3664101a2f78
+
+Source
+
+https://github.com/ex3ndr/supervoice-enhance/assets/400659/d12550ac-ff4e-4127-9a3e-d3c3a8124355
 
 # Usage
 
