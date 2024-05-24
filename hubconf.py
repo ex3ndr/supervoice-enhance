@@ -6,6 +6,7 @@ def enhance(pretrained = True):
     import torch
     import os
     from supervoice_enhance.model import EnhanceModel
+    from supervoice_enhance.wrapper import SuperVoiceEnhance
     from supervoice_enhance.config import config
 
     # Model
