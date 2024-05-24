@@ -6,3 +6,4 @@ wandb
 output
 .ipynb_checkpoints
 .env
+eval.out

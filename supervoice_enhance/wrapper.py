@@ -8,8 +8,15 @@ class SuperVoiceEnhance(torch.nn.Module):
         super(SuperVoiceEnhance, self).__init__()
         self.diffusion = EnhanceModel(flow, config)
         self.vocoder = vocoder
+        self.sample_rate = config.audio.sample_rate
 
+    @torch.no_grad()
     def enhance(self, waveform, *, steps = 8, alpha = None):
+
+        # Check inputs
+        assert waveform.dim() == 1, "Expected 1D waveform"
+        assert steps >= 2, "Expected steps >= 2"
+        assert alpha is None or (alpha >= 0 and alpha <= 1), "Expected alpha in [0, 1]"
 
         # Convert to spectogram
         device = self._device()
@@ -22,8 +29,9 @@ class SuperVoiceEnhance(torch.nn.Module):
         enhanced = self._audio_denormalize(enhanced).to(torch.float32)
 
         # Vocoder
-        reconstructed = vocoder.generate(enhanced.unsqueeze(0)).squeeze(0)
-        reconstructed.to(waveform.device)
+        reconstructed = self.vocoder.generate(enhanced.unsqueeze(0))
+        reconstructed = reconstructed.to(waveform.device)
+        reconstructed = reconstructed.squeeze(0)
         return reconstructed
 
     def _do_spectogram(self, waveform):
