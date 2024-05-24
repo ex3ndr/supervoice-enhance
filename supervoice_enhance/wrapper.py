@@ -14,7 +14,7 @@ class SuperVoiceEnhance(torch.nn.Module):
         # Convert to spectogram
         device = self._device()
         spec = self._do_spectogram(waveform)
-        spec.to(device)
+        spec = spec.to(device)
 
         # Enhance
         spec = self._audio_normalize(spec).to(torch.float32)
