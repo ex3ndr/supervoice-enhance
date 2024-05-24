@@ -1,6 +1,7 @@
 import torch
 from .model import EnhanceModel
 from .config import config
+from .audio import spectogram
 
 class SuperVoiceEnhance(torch.nn.Module):
     def __init__(self, flow, vocoder):
