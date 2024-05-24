@@ -1,6 +1,6 @@
 dependencies = ['torch', 'torchaudio']
 
-def enhance():
+def enhance(pretrained = True):
 
     # Imports
     import torch
@@ -14,8 +14,9 @@ def enhance():
     model = SuperVoiceEnhance(flow, vocoder)
 
     # Load checkpoint
-    checkpoint = torch.hub.load_state_dict_from_url("https://shared.korshakov.com/models/supervoice-enhance-60000.pt", map_location="cpu")
-    model.diffusion.load_state_dict(checkpoint['model'])
+    if pretrained:
+        checkpoint = torch.hub.load_state_dict_from_url("https://shared.korshakov.com/models/supervoice-enhance-60000.pt", map_location="cpu")
+        model.diffusion.load_state_dict(checkpoint['model'])
 
     return model
             
