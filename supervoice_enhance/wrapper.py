@@ -4,7 +4,7 @@ from .config import config
 
 class SuperVoiceEnhance(torch.nn.Module):
     def __init__(self, flow, vocoder):
-        super(SupervoiceEnhance, self).__init__()
+        super(SuperVoiceEnhance, self).__init__()
         self.diffusion = EnhanceModel(flow, config)
         self.vocoder = vocoder
 
