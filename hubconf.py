@@ -12,7 +12,7 @@ def enhance(pretrained = True, vocoder = True):
     # Load vocoder
     if vocoder is False:
         vocoder = None
-    else if vocoder is True:
+    elif vocoder is True:
         vocoder = torch.hub.load(repo_or_dir='ex3ndr/supervoice-vocoder', model='bigvsan')
 
     # Model
