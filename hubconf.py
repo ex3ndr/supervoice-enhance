@@ -1,6 +1,6 @@
 dependencies = ['torch', 'torchaudio']
 
-def enhance(pretrained = True):
+def enhance(pretrained = True, vocoder = True):
 
     # Imports
     import torch
@@ -9,8 +9,13 @@ def enhance(pretrained = True):
     from supervoice_enhance.wrapper import SuperVoiceEnhance
     from supervoice_enhance.config import config
 
+    # Load vocoder
+    if vocoder is False:
+        vocoder = None
+    else if vocoder is True:
+        vocoder = torch.hub.load(repo_or_dir='ex3ndr/supervoice-vocoder', model='bigvsan')
+
     # Model
-    vocoder = torch.hub.load(repo_or_dir='ex3ndr/supervoice-vocoder', model='bigvsan')
     flow = torch.hub.load(repo_or_dir='ex3ndr/supervoice-flow', model='flow')
     model = SuperVoiceEnhance(flow, vocoder)
 
