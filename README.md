@@ -1,5 +1,7 @@
 # ✨ SuperVoice Enhance [BETA]
 
+Feel free to join my [Discord Server](https://discord.gg/DK8b9AUGRa) to discuss this model!
+
 Enhancing diffusion neural network for a single speaker speech based on Speech Flow architecture. [Evaluation notebook](/eval.ipynb).
 
 > [!IMPORTANT]  
